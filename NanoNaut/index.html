@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8" />
+        <title>NanoNaut - THE game</title>
+        
+        <!-- Use debug variant of phaser for now. -->
+        <script src="//cdn.jsdelivr.net/phaser/2.6.2/phaser.js"></script>
+        <script src="scripts/utilities.js"></script>
+        <script src="scripts/assets.js"></script>
+        <script src="scripts/enemies/basic.js"></script>
+        <script src="scripts/enemies.js"></script>
+        <script src="scripts/player.js"></script>
+        <script src="scripts/menu.js"></script>
+        
+        <style>
+            html {
+                display: table;
+                height: 100%;
+                width: 100%;
+            }
+        
+            body {
+                display: table-cell;
+                vertical-align: middle;
+                background: #000000;
+                padding: 0;
+                margin: 0;
+                height: 100%;
+            }
+            
+            canvas {
+                margin: auto;
+            }
+        </style>
+    </head>
+    
+    <body id="game">
+        <script type="text/javascript">
+            var game = new Phaser.Game(1280, 720, Phaser.AUTO, "game", {preload: preload, create: create, update: update, render: render});
+            
+            var assets;
+            var enemies;
+            var player;
+            var menu;
+            var resize = true;
+            var hasGameStarted = false;
+
+            function preload() {
+                assets = new ASSETS(game);
+                menu = new MENU(game);
+                assets.load_assets();
+                
+                game.scale.scaleMode = Phaser.ScaleManager.EXACT_FIT;
+            }
+            
+            function create() {
+                game.renderer.clearBeforeRender = true;
+                game.renderer.roundPixels = true;
+                game.physics.startSystem(Phaser.Physics.ARCADE);
+
+                this.input = this.game.input.keyboard.createCursorKeys();
+                this.game.input.keyboard.addKeyCapture([Phaser.Keyboard.SPACEBAR]);
+                
+                player = new PLAYER(game);
+                enemies = new ENEMIES(game);
+
+                menu.LoadMenu();
+            }
+                
+            function update() {
+              if(this.game.input.keyboard.isDown(Phaser.Keyboard.SPACEBAR)){
+                hasGameStarted = true;
+                menu.changeBackground();
+              }
+
+              if(hasGameStarted == true){
+           	    enemies.update(player);
+                player.update();
+              }
+            }
+            
+            function render() {
+                if (resize) {
+                    var width = window.innerWidth;
+                    var height = window.innerHeight;
+                    
+                    var width_at_height = (height / 9 * 16) | 0;
+                    var height_at_width = (width / 16 * 9) | 0;
+                    
+                    if (width_at_height > width) {
+                        height = height_at_width;
+                    } else if (height_at_width > height) {
+                        width = width_at_height;
+                    }
+                    game.scale.setMinMax(0, 0, width, height);
+                    game.scale.refresh();
+                    resize = false;
+                }
+            }
+            
+            window.onresize = function () {
+                resize = true;
+            };
+        </script>
+    </body>
+</html>
